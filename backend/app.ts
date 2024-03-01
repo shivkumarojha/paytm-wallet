@@ -7,6 +7,9 @@ import  router  from './routes/index'
 
 const app = express()
 
+// For parsing body
+app.use(express.json())
+
 const PORT = 3000
 
 // Root Router
