@@ -5,7 +5,6 @@ import { z } from 'zod'
 import { User } from '../models/db'
 import bcrypt from 'bcrypt'
 
-
 export const router = express.Router()
 
 // User Zod object for Signup
@@ -14,6 +13,12 @@ const signupUserBody = z.object({
     password: z.string().min(6),
     firstName: z.string(),
     lastName: z.string()
+})
+
+// Zod validation for signin data
+const signinBody = z.object({
+    email: z.string().email().min(5),
+    password: z.string().min(6)
 })
 
 // Function for hashing password 
@@ -56,6 +61,35 @@ router.post('/signup', async(req, res) => {
             return res.status(401).json({message: "Database error occured"})
         };
         
+    }
+    
+})
+
+// Sign in route
+router.post('/signin', async(req, res) => {
+    const parsedData = signinBody.safeParse(req.body)
+    if(!parsedData.success) {
+        return res.status(411).json({message: 'invalid Input'})
+    }
+
+    const {email, password} = parsedData.data
+    
+    const user = await User.findOne({email: email})
+    if(!user) {
+        return res.status(401).json({message: 'No user with email id'})
+    }else {
+        const hashedPassword = user.password
+        if(password && hashedPassword) {
+            const passwordMatched =  await bcrypt.compare(password, hashedPassword) 
+            if(!passwordMatched) {
+                return res.json({message: "Password Doesn't matched"})
+            }
+            const payload = {
+                user: user.email
+            }
+            const token = jwt.sign(payload, JWT_SECRET, {expiresIn: "1h"})
+            res.status(200).json({message: "Loggedin Successfully", token: token})
+        }
     }
     
 })
