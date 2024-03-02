@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import { z } from 'zod'
 import { User } from '../models/db'
 import bcrypt from 'bcrypt'
-
+import authencticatieUser from '../middleware/authMiddleware'
 export const router = express.Router()
 
 // User Zod object for Signup
@@ -31,7 +31,7 @@ async function hashPassword(password:string){
     }
 }
 
-router.get('/health', (req, res) => {
+router.get('/health',(req, res) => {
     res.json({message: 'Okay'})
 })
 
