@@ -2,9 +2,10 @@ import express from 'express'
 import { JWT_SECRET } from '../config/jwt.config'
 import jwt from 'jsonwebtoken'
 import { z } from 'zod'
-import { User } from '../models/db'
+import { User } from '../models/user.models'
 import bcrypt from 'bcrypt'
 import authencticatieUser from '../middleware/authMiddleware'
+import authenticateUser from '../middleware/authMiddleware'
 export const router = express.Router()
 
 // User Zod object for Signup
@@ -85,11 +86,35 @@ router.post('/signin', async(req, res) => {
                 return res.json({message: "Password Doesn't matched"})
             }
             const payload = {
-                user: user.email
+                userId: user._id
             }
             const token = jwt.sign(payload, JWT_SECRET, {expiresIn: "1h"})
             res.status(200).json({message: "Loggedin Successfully", token: token})
         }
     }
     
+})
+
+// zod object for update user
+const updateUserBody = z.object({
+    password: z.string().optional(),
+    firstName: z.string().optional(),
+    lastName: z.string().optional()
+}) 
+
+// Route for update user Information
+router.put('/user', authenticateUser, async(req, res) => {
+    const parsedData = updateUserBody.safeParse(req.body)
+    if(!parsedData.success) {
+        return res.status(403).json({message: "Invalid values"})
+    }
+    const {password, firstName, lastName} = parsedData.data
+
+    
+        if(password) {
+            const hashedPassword = await hashPassword(password)
+        }
+        // @ts-ignore
+        const user = await User.updateOne({_id: req.userId }, req.body)
+
 })

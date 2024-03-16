@@ -9,12 +9,16 @@ function authenticateUser(req: Request, res: Response, next: NextFunction) {
         return res.status(403).json({ message: "Token is invalid or not provided" })
     }
     const token = authHeader.split(' ')[1]
-    const verified = jwt.verify(token, JWT_SECRET)
-    if (!token) {
-        console.log("invalid")
+    try {
+        const verified = jwt.verify(token, JWT_SECRET)
+        // @ts-ignore
+        req.userId = verified.userId
+        next()
+    }
+    catch(err) {
         return res.status(411).json({ message: "unauthorised" })
     }
-    next()
+    
 }
 
 
