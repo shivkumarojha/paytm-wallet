@@ -1,17 +1,17 @@
 import jwt from "jsonwebtoken"
 
 import { Request, Response, NextFunction } from "express"
+import { RequestWithUserId, JwtVerifiedPayload } from "../types/interfaces"
 
-
-function authenticateUser(req: Request, res: Response, next: NextFunction) {
+function authenticateUser(req: RequestWithUserId, res: Response, next: NextFunction) {
     const authHeader = req.headers.authorization
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(403).json({ message: "Token is invalid or not provided" })
     }
     const token = authHeader.split(' ')[1]
     try {
-        const verified = jwt.verify(token, process.env.JWT_SECRET as string)
-        // @ts-ignore
+        const verified = jwt.verify(token, process.env.JWT_SECRET as string) as JwtVerifiedPayload
+
         req.userId = verified.userId
         next()
     }

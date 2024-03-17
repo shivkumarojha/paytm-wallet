@@ -3,9 +3,11 @@ import jwt from 'jsonwebtoken'
 import { z } from 'zod'
 import { User } from '../models/user.models'
 import bcrypt from 'bcrypt'
-import authencticatieUser from '../middleware/authMiddleware'
+
 import authenticateUser from '../middleware/authMiddleware'
 
+// import types
+import { RequestWithUserId } from '../types/interfaces'
 export const router = express.Router()
 
 // JWT_SECRET
@@ -105,18 +107,16 @@ const updateUserBody = z.object({
 }) 
 
 // Route for update user Information
-router.put('/user', authenticateUser, async(req, res) => {
+router.put('/update-user', authenticateUser, async(req: RequestWithUserId, res) => {
     const parsedData = updateUserBody.safeParse(req.body)
     if(!parsedData.success) {
         return res.status(403).json({message: "Invalid values"})
     }
-    const {password, firstName, lastName} = parsedData.data
 
-    
-        if(password) {
-            const hashedPassword = await hashPassword(password)
-        }
-        // @ts-ignore
-        const user = await User.updateOne({_id: req.userId }, req.body)
+        const {firstName, lastName} = parsedData.data
+        const user = await User.findByIdAndUpdate(req.userId, { firstName, lastName})
+        console.log(user)
+
+        res.status(200).json({message: "User is updated"})
 
 })
