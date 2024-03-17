@@ -6,6 +6,7 @@ import { User } from '../models/user.models'
 import bcrypt from 'bcrypt'
 import authencticatieUser from '../middleware/authMiddleware'
 import authenticateUser from '../middleware/authMiddleware'
+
 export const router = express.Router()
 
 // User Zod object for Signup
