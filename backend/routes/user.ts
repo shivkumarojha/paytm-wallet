@@ -1,5 +1,4 @@
 import express from 'express'
-import { JWT_SECRET } from '../config/jwt.config'
 import jwt from 'jsonwebtoken'
 import { z } from 'zod'
 import { User } from '../models/user.models'
@@ -8,6 +7,9 @@ import authencticatieUser from '../middleware/authMiddleware'
 import authenticateUser from '../middleware/authMiddleware'
 
 export const router = express.Router()
+
+// JWT_SECRET
+const JWT_SECRET: string = process.env.JWT_SECRET || ""
 
 // User Zod object for Signup
 const signupUserBody = z.object({

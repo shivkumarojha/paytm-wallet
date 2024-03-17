@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken"
 
 import { Request, Response, NextFunction } from "express"
-import { JWT_SECRET } from "../config/jwt.config"
+
 
 function authenticateUser(req: Request, res: Response, next: NextFunction) {
     const authHeader = req.headers.authorization
@@ -10,7 +10,7 @@ function authenticateUser(req: Request, res: Response, next: NextFunction) {
     }
     const token = authHeader.split(' ')[1]
     try {
-        const verified = jwt.verify(token, JWT_SECRET)
+        const verified = jwt.verify(token, process.env.JWT_SECRET as string)
         // @ts-ignore
         req.userId = verified.userId
         next()

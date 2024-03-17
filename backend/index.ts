@@ -1,3 +1,7 @@
+// dotenv configuration
+import dotenv from "dotenv"
+dotenv.config()
+
 import express from 'express'
 import mongoose from 'mongoose'
 
@@ -10,7 +14,6 @@ const app = express()
 // For parsing body
 app.use(express.json())
 
-const PORT = 3000
 
 // Root Router
 app.use('/api/v1', router)
@@ -26,6 +29,6 @@ async function dbConnect() {
 }
 dbConnect().catch(err => console.log(err))
 
-app.listen(PORT, () => {
-    console.log("Server is running at ", PORT)
+app.listen(process.env.PORT, () => {
+    console.log("Server is running at ", process.env.PORT)
 })
