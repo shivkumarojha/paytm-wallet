@@ -43,12 +43,12 @@ router.post('/signup', async(req, res) => {
     
     // safe parse req.body using zod validation
     const parsedData = signupUserBody.safeParse(req.body)
-    
     // check if the validation failed
     if(!parsedData.success) {
         return res.status(411).json({message: "Inputs are not invalid", err: parsedData.error})
     }
-    const {email, password, firstName, lastName } = req.body
+    
+    const {email, password, firstName, lastName } = parsedData.data
     const isUserExist = await User.findOne({email: email})
     if(isUserExist) {
         return res.status(411).json({message: "User Exists!"})
@@ -57,12 +57,11 @@ router.post('/signup', async(req, res) => {
         // Hash the password first 
         const hashedPassword = await hashPassword(password)
         try {
-
             const newUser = await User.create({email: email, password: hashedPassword, firstName: firstName, lastName: lastName}) 
-
+            
             res.status(200).json({message: 'User Created', userId: newUser._id}) 
         } catch(error) {
-            return res.status(401).json({message: "Database error occured"})
+            return res.status(401).json({message: "Database error occured", error})
         };
         
     }
