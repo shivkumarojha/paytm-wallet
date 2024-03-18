@@ -7,6 +7,9 @@ import bcrypt from 'bcrypt'
 import { Request, Response, NextFunction } from 'express'
 import authenticateUser from '../middleware/auth.middleware'
 
+// Import account model
+import { Account } from '../models/account.models'
+
 // import types
 import { RequestWithUserId } from '../types/interfaces'
 export const router = express.Router()
@@ -62,6 +65,12 @@ router.post('/signup', async(req, res) => {
         try {
             const newUser = await User.create({email: email, password: hashedPassword, firstName: firstName, lastName: lastName}) 
             
+            // assign initial amount for the user
+            const userId = newUser._id
+            await Account.create({
+                userId,
+                balance: 1 + Math.random() *10000
+            })
             res.status(200).json({message: 'User Created', userId: newUser._id}) 
         } catch(error) {
             return res.status(401).json({message: "Database error occured", error})
@@ -117,5 +126,38 @@ router.put('/update-user', authenticateUser, async(req: Request, res: Response) 
         const {firstName, lastName} = parsedData.data
         const user = await User.findByIdAndUpdate((req as RequestWithUserId).userId, { firstName, lastName}).select("-password")
         res.status(200).json({message: "User is updated"})
+
+})
+
+// Filter users 
+router.get("/bulk", authenticateUser, async(req: Request, res: Response) => {
+    const filter = req.query.filter || ""
+    console.log(filter)
+
+    // regex
+    const regex = new RegExp((filter as string), "i")
+    // filter user from database
+    const users = await User.find({
+        $or: [{
+            firstName: {
+                "$regex": regex
+            }
+        }, {
+            lastName: {
+                "$regex": regex
+            }
+        }
+    ]
+    })
+
+    res.status(200).json({
+        user: users.map(user => ({
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            _id: user._id
+        }))
+    })
+    console.log(users)
 
 })
