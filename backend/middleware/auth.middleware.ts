@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken"
 
 import { Request, Response, NextFunction } from "express"
-import { RequestWithUserId, JwtVerifiedPayload } from "../types/interfaces"
+import {RequestWithUserId, JwtVerifiedPayload } from "../types/interfaces"
 
-function authenticateUser(req: RequestWithUserId, res: Response, next: NextFunction) {
+function authenticateUser(req: Request, res: Response, next: NextFunction) {
     const authHeader = req.headers.authorization
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(403).json({ message: "Token is invalid or not provided" })
@@ -12,11 +12,11 @@ function authenticateUser(req: RequestWithUserId, res: Response, next: NextFunct
     try {
         const verified = jwt.verify(token, process.env.JWT_SECRET as string) as JwtVerifiedPayload
 
-        req.userId = verified.userId
+        (req as RequestWithUserId).userId = verified.userId
         next()
     }
     catch(err) {
-        return res.status(411).json({ message: "unauthorised" })
+        return res.status(401).json({ message: "unauthorised" })
     }
     
 }

@@ -4,7 +4,8 @@ import { z } from 'zod'
 import { User } from '../models/user.models'
 import bcrypt from 'bcrypt'
 
-import authenticateUser from '../middleware/authMiddleware'
+import { Request, Response, NextFunction } from 'express'
+import authenticateUser from '../middleware/auth.middleware'
 
 // import types
 import { RequestWithUserId } from '../types/interfaces'
@@ -101,22 +102,20 @@ router.post('/signin', async(req, res) => {
 
 // zod object for update user
 const updateUserBody = z.object({
-    password: z.string().optional(),
+    password: z.string().min(6).optional(),
     firstName: z.string().optional(),
     lastName: z.string().optional()
 }) 
 
 // Route for update user Information
-router.put('/update-user', authenticateUser, async(req: RequestWithUserId, res) => {
+router.put('/update-user', authenticateUser, async(req: Request, res: Response) => {
     const parsedData = updateUserBody.safeParse(req.body)
     if(!parsedData.success) {
         return res.status(403).json({message: "Invalid values"})
     }
 
         const {firstName, lastName} = parsedData.data
-        const user = await User.findByIdAndUpdate(req.userId, { firstName, lastName})
-        console.log(user)
-
+        const user = await User.findByIdAndUpdate((req as RequestWithUserId).userId, { firstName, lastName}).select("-password")
         res.status(200).json({message: "User is updated"})
 
 })
